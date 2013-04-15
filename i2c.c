@@ -1,15 +1,11 @@
+#define _PLIB_DISABLE_LEGACY
+
 #include <i2c.h>
 #include <plib.h>
 
-static BOOL startI2C( BOOL restart );
+static BOOL startI2C(BOOL restart);
 static BOOL writeOneI2C(UINT8 data);
 static void stopI2C(void);
-
-void initI2C()
-{
-    I2CSetFrequency(I2C1, GetPeripheralClock(), I2C_CLOCK_FREQ);
-    I2CEnable(I2C1, TRUE);
-}
 
 static BOOL startI2C( BOOL restart )
 {
@@ -24,6 +20,7 @@ static BOOL startI2C( BOOL restart )
         while(!I2CBusIsIdle(I2C1));
         if(I2CStart(I2C1)!=I2C_SUCCESS)
             return FALSE;
+        PORTAbits.RA4 = 1;
     }
     // Wait for the signal to complete
     do {
@@ -44,6 +41,34 @@ static void stopI2C()
     } while ( !(status & I2C_STOP) );
 }
 
+static BOOL writeOneI2C(UINT8 data)
+{
+    // Wait for the transmitter to be ready
+    while(!I2CTransmitterIsReady(I2C1));
+    // Transmit the byte
+    if(I2CSendByte(I2C1, data) == I2C_MASTER_BUS_COLLISION)
+        return FALSE;
+    // Wait for the transmission to finish
+    while(!I2CTransmissionHasCompleted(I2C1));
+    // Verify that the byte was acknowledged
+    if(!I2CByteWasAcknowledged(I2C1))
+        return FALSE;
+    return TRUE;
+}
+
+/***********************************************************/
+/********* PUBLIC FUNCTION *********************************/
+/***********************************************************/
+
+void initI2C(void)
+{
+    I2CConfigure(I2C1, I2C_ENABLE_SLAVE_CLOCK_STRETCHING|I2C_ENABLE_HIGH_SPEED);
+    //I2CSetFrequency(I2C1, GetPeripheralClock(), I2C_CLOCK_FREQ);
+    I2C1BRG = ((GetPeripheralClock()/I2C_CLOCK_FREQ)/2) - 2;
+    //I2CEnable(I2C1, TRUE);
+    I2C1CONbits.ON = 1;
+}
+
 BOOL writeI2C(UINT8 iAddr, UINT8 *aData, UINT8 iSize)
 {
     I2C_7_BIT_ADDRESS addr;
@@ -62,21 +87,6 @@ BOOL writeI2C(UINT8 iAddr, UINT8 *aData, UINT8 iSize)
     // End the transfer (hang here if an error occured)
     stopI2C();
     return bSucc;
-}
-
-static BOOL writeOneI2C(UINT8 data)
-{
-    // Wait for the transmitter to be ready
-    while(!I2CTransmitterIsReady(I2C1));
-    // Transmit the byte
-    if(I2CSendByte(I2C1, data) == I2C_MASTER_BUS_COLLISION)
-        return FALSE;
-    // Wait for the transmission to finish
-    while(!I2CTransmissionHasCompleted(I2C1));
-    // Verify that the byte was acknowledged
-    if(!I2CByteWasAcknowledged(I2C1))
-        return FALSE;
-    return TRUE;
 }
 
 BOOL readI2C(UINT8 iAddr, UINT8 *aData, UINT8 iSize, UINT8 *aReadData, UINT8 iByteToRead)
