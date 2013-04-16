@@ -117,8 +117,8 @@ int main(void)
             continue;
         if(getsUSBUSART(asInBuff, 1)!=0)
             processData(asInBuff[0]);
-        // Se la USB ï¿½ pronta per trasmettere e ci sono dati li scrivo su USB
-        // Se arrivano dati ed il buffer ï¿½ pieno c'ï¿½ il rischio di perdere i dati
+        // Se la USB è pronta per trasmettere e ci sono dati li scrivo su USB
+        // Se arrivano dati ed il buffer è pieno c'è il rischio di perdere i dati
         if(USBUSARTIsTxTrfReady() && bPosOut>0)
         {
             putUSBUSART(asOutBuff, bPosOut);
@@ -154,7 +154,19 @@ static __inline void __attribute__((always_inline)) initSystem()
     // Unlock
     SYSKEY = 0xAA996655;
     SYSKEY = 0x556699AA;
-    // TODO guardare il PMD per disabilitare le periferiche non usate
+
+    CFGCONbits.PMDLOCK = 0;
+    // Disable peripherical...
+    PMD1 = 0xFFFFFFFF;
+    PMD2 = 0xFFFFFFFF;
+    PMD3 = 0xFFFFFFFF;
+    PMD4 = 0xFFFFFFFF;
+    //PMD5 = 0xFFFFFFFF;
+    PMD5bits.SPI2MD = 1;
+    PMD5bits.I2C2MD = 1;
+    PMD6 = 0xFFFFFFFF;
+
+    CFGCONbits.PMDLOCK = 1;
     CFGCONbits.IOLOCK = 0;
     //RPB14Rbits.RPB14R = 5; // OC3 RB14
     RPB15Rbits.RPB15R = 1; // RB15 => TX1
@@ -168,8 +180,8 @@ static __inline void __attribute__((always_inline)) initSystem()
     UARTSetDataRate(UART1, GetPeripheralClock(), 9600);
     UARTEnable(UART1, UART_ENABLE_FLAGS(UART_PERIPHERAL | UART_RX | UART_TX));
 
-    //initI2C();
-
+    initI2C();
+    mcpInit();
     initGPS();
 
     /*T3CON = 0x8000;
@@ -201,18 +213,10 @@ static __inline void __attribute__((always_inline)) processData(char cData)
     {
         case 't':
         {
-            /*UINT8 iTmp[2];
-            //PORTAbits.RA4 = 1;
-            iTmp[0] = IODIR;
-            iTmp[1] = 0; // All output
-            writeI2C(MCP23_1,iTmp,2);
-            iTmp[0] = GPIO;
-            iTmp[1] = 0xAA;
-            writeI2C(MCP23_1,iTmp,2);
-            //PORTAbits.RA4 = 0;*/
-            LATBbits.LATB8 = 1;
-            LATBbits.LATB9 = 1;
-            LATBbits.LATB7 = 1;
+            UINT8 iTmp[2];
+
+            PORTAbits.RA4 = 1;
+            mcpWrite(0xAA);
             break;
         }
         case 'v':

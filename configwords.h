@@ -35,7 +35,7 @@
     #pragma config FWDTWINSZ = WISZ_25      // Watchdog Timer Window Size (Window Size is 25%)
 
     // DEVCFG0
-    #pragma config JTAGEN = ON              // JTAG Enable (JTAG Port Enabled)
+    #pragma config JTAGEN = OFF             // JTAG Disable for use RB5, RB7, RB8, RB9
     #pragma config ICESEL = ICS_PGx1        // ICE/ICD Comm Channel Select (Communicate on PGEC1/PGED1)
     #pragma config PWP = OFF                // Program Flash Write Protect (Disable)
     #pragma config BWP = OFF                // Boot Flash Write Protect bit (Protection Disabled)

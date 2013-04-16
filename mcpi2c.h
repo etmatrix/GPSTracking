@@ -9,7 +9,8 @@
 #define IODIR 0x00
 #define GPIO  0x09
 
-void McpWrite(BYTE addr,BYTE data);
-BYTE McpRead(BYTE addr);
+void mcpInit(void);
+void mcpWrite(UINT8 data);
+UINT8 mcpRead();
 
 #endif
