@@ -6,11 +6,13 @@
 
 #define MCP23_1 0x20
 
+// Register Address MCP23008
 #define IODIR 0x00
+#define GPPU  0x06
 #define GPIO  0x09
 
 void mcpInit(void);
-void mcpWrite(UINT8 data);
-UINT8 mcpRead();
+void mcpWrite(UINT8,UINT8);
+UINT8 mcpRead(UINT8);
 
 #endif

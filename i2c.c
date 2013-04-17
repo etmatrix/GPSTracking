@@ -7,6 +7,7 @@ static BOOL startI2C(BOOL restart);
 static BOOL writeOneI2C(UINT8 data);
 static void stopI2C(void);
 
+// TODO prevedere timeout in I2CGetStatus c'è il rischio di loop
 static BOOL startI2C( BOOL restart )
 {
     I2C_STATUS status;
@@ -55,7 +56,7 @@ static BOOL writeOneI2C(UINT8 data)
 }
 
 /***********************************************************/
-/********* PUBLIC FUNCTION *********************************/
+/********* EXTERNAL FUNCTION *******************************/
 /***********************************************************/
 
 void initI2C(void)
