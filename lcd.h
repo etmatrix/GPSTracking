@@ -12,10 +12,10 @@
 #define LCD_CLEAR       0x01
 #define LCD_RETURN_HOME 0x02
 
-void LCD_Init(void);
-void LCD_GotoXY(unsigned char, unsigned char);
-void LCD_PutCharXY(unsigned char, unsigned char, unsigned char);
-void LCD_PutChar(unsigned char);
-void LCD_PutStringXY(unsigned char, unsigned char, char* );
-void LCD_PutString(char*);
-void LCD_PutCGRAMCharPos(char*, char);
+void lcdInit(void);
+void lcdGotoXY(unsigned char, unsigned char);
+void lcdPutCharXY(unsigned char, unsigned char, unsigned char);
+void lcdPutChar(unsigned char);
+void lcdPutStringXY(unsigned char, unsigned char, char* );
+void lcdPutString(char*);
+void lcdPutCGRAMCharPos(char*, char);

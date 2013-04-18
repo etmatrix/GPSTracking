@@ -189,7 +189,7 @@ static __inline void __attribute__((always_inline)) initSystem()
     mcpInit();
     initGPS();
 
-    LCD_Init();
+    lcdInit();
     /*T3CON = 0x8000;
     PR3 = 1;
 
