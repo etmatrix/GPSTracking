@@ -5,13 +5,13 @@
  * RB0 Tx2 Bluetooth
  * RB1 MOSI SD
  * RB2 ADC Luminosità
- * RB3 Pulsante 1
+ * RB3 LCD E
  * RA2 Quarzo
  * RA3 Quarzo
- * RB4 Pulsante 2
+ * RB4 LCD RS
  * RA4 DHT11
  * RB5 MISO SD
- * RB7 Pulsante 3
+ * RB7 CS SD
  * RB8 SDA1 I2C
  * RB9 SCL1 I2C
  * RB10 D+ USB Clock ICSP
@@ -40,24 +40,26 @@
  */
 /*
 2 I2C
-3 bottoni
 2 usb
 2 gps
 2 bluetooth
 1 adc batteria
-1 adc luminosità  fotoresistenza
-3 spi per SD senza CS c'è solo lui
+1 adc luminosità fotoresistenza
+4 spi per SD
 1 DHT11
+2 segnali LCD
 
 I2C frequenza minima 400KHz valutare per più
 - MCP23008
 - Barometro e temperatura
 - digital potter
 
-MCP
-6 LCD
+MCP23008
+4 data LCD
 1 bluetooth power
- */
+3 input pulsanti
+
+*/
 
 #define _PLIB_DISABLE_LEGACY
 
@@ -187,6 +189,7 @@ static __inline void __attribute__((always_inline)) initSystem()
     mcpInit();
     initGPS();
 
+    LCD_Init();
     /*T3CON = 0x8000;
     PR3 = 1;
 
