@@ -12,10 +12,21 @@
 #define LCD_CLEAR       0x01
 #define LCD_RETURN_HOME 0x02
 
+#define CMD 0
+#define DATA 1
+
 void lcdInit(void);
-void lcdGotoXY(unsigned char, unsigned char);
 void lcdPutCharXY(unsigned char, unsigned char, unsigned char);
 void lcdPutChar(unsigned char);
 void lcdPutStringXY(unsigned char, unsigned char, char* );
 void lcdPutString(char*);
 void lcdPutCGRAMCharPos(char*, char);
+//void lcdSendCommand(UINT8);
+void lcdSendByte(UINT8 iByte,UINT8 iType);
+
+#define lcdSendCmd(x) lcdSendByte(x,CMD)
+#define lcdSendData(x) lcdSendByte(x,DATA)
+
+// Puts a charachter on LCD
+#define lcdPutChar(x) lcdSendData(x)
+#define lcdClear() lcdSendCmd(LCD_CLEAR)

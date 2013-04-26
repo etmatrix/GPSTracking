@@ -8,3 +8,5 @@ void delayWith5(const UINT16);
 void delayWith5M(const UINT16);
 void initDelayWith5M(const UINT16 iDelay);
 void __inline restoreT1(void);
+void DelayMs(WORD);
+void delayUs(UINT16 iUs);

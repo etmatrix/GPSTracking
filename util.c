@@ -25,14 +25,14 @@ UINT8 convertHexToByte(char cHi,char cLo)
     return bRet;
 }
 
-// Require the TIMER2 enabled
+/*// Require the TIMER2 enabled
 void delayUs(UINT16 iDelay)
 {
     TMR2 = 0;
     PR2 = iDelay;
     IFS0bits.T2IF = 0;
     while(!IFS0bits.T2IF){}
-}
+}*/
 // Each unit 500 ns 16MHz 62,5 ns * 8 (prescaler 01 1:8) = 500 ns
 void delayWith5(const UINT16 iDelay)
 {
@@ -67,11 +67,33 @@ void initDelayWith5M(const UINT16 iDelay)
     IFS1bits.T5IF = 0;
     #endif
 }
-void __inline restoreT1()
+
+void DelayMs(WORD delay)
 {
-    // Enable Timer1 for touch polling
-    T1CON = 0b1010000000110000; // Fosc/2 = 16MHz - 62.5ns * 256 = 16us each unit
-    PR1 = 1600; // 16us * PR1 = 25.6 ms polling touch
-    TMR1 = 0;
-    IFS0bits.T1IF = 0;
+    unsigned int int_status;
+    while( delay-- )
+    {
+        int_status = INTDisableInterrupts();
+        OpenCoreTimer(GetSystemClock() / 2000);
+        INTRestoreInterrupts(int_status);
+        mCTClearIntFlag();
+        while( !mCTGetIntFlag() );
+    }
+    mCTClearIntFlag();
+}
+
+void delayUs(UINT16 iUs)
+{
+    // CP0Count counts at half the CPU rate
+    UINT8 Fcp0 = GetSystemClock() / 1000000 / 2;
+    // get start ticks
+    UINT32 start = _CP0_GET_COUNT();
+    // calculate last tick number for the given number of microseconds
+    UINT32 stop = start + iUs * Fcp0;
+
+    // wait till count reaches the stop value
+    if (stop > start)
+        while (_CP0_GET_COUNT() < stop);
+    else
+        while (_CP0_GET_COUNT() > start || _CP0_GET_COUNT() < stop);
 }

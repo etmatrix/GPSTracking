@@ -9,9 +9,9 @@
  * RA2 Quarzo
  * RA3 Quarzo
  * RB4 LCD RS
- * RA4 DHT11
+ * RA4 CS SD
  * RB5 MISO SD
- * RB7 CS SD
+ * RB7 DHT11
  * RB8 SDA1 I2C
  * RB9 SCL1 I2C
  * RB10 D+ USB Clock ICSP
@@ -35,7 +35,7 @@
  * Timer4
  *
  * Timer5
- * - delay in util
+ * - timeout DHT11
  *
  */
 /*
@@ -52,7 +52,7 @@
 I2C frequenza minima 400KHz valutare per più
 - MCP23008
 - Barometro e temperatura
-- digital potter
+- digital potter (vediamo ok per regolare il contrasto ma per la luminosità serve PWM, magari NE555 e con digital potter si regola il duty)
 
 MCP23008
 4 data LCD
@@ -77,8 +77,9 @@ MCP23008
 #include <configwords.h>
 
 #include <gps.h>
-#include <i2c.h>
-#include <mcpi2c.h>
+#include <lcd.h>
+#include <mcp115A2.h>
+#include <dht11.h>
 //#include <spi.h>
 //#include <sdcard.h>
 
@@ -171,6 +172,9 @@ static __inline void __attribute__((always_inline)) initSystem()
     PMD5bits.I2C2MD = 1;
     PMD6 = 0xFFFFFFFF;
 
+    // ... and enable
+    PMD4bits.T5MD = 0;
+
     CFGCONbits.PMDLOCK = 1;
     CFGCONbits.IOLOCK = 0;
     //RPB14Rbits.RPB14R = 5; // OC3 RB14
@@ -187,9 +191,10 @@ static __inline void __attribute__((always_inline)) initSystem()
 
     initI2C();
     mcpInit();
-    initGPS();
 
+    initGPS();
     lcdInit();
+    baroInit();
     /*T3CON = 0x8000;
     PR3 = 1;
 
@@ -217,21 +222,67 @@ static __inline void __attribute__((always_inline)) processData(char cData)
 
     switch(cData)
     {
-        /*case 't':
+        case 't':
         {
-            UINT iTmp;
+            #if 0
+            UINT8 /*iTmp,iTmp2,*/iNdx,iNdx2;
             char asBuf[3];
 
             asBuf[2] = 0;
-            mcpWrite(IODIR,0xFF);
+            /*mcpWrite(IODIR,0xFF);
             mcpWrite(GPPU,0xFF);
             Nop();
-            iTmp = mcpRead(GPIO);
-            convertByteToHex(iTmp,asBuf);
-            strcpy(asOutBuff,asBuf);
-            bPosOut = strlen(asOutBuff);
+            iTmp = mcpRead(GPIO);*/
+            for(iNdx=0;iNdx<0xFF;iNdx++)
+            {
+            convertByteToHex(iNdx,asBuf);
+            /*strcpy(asOutBuff,asBuf);
+            bPosOut = strlen(asOutBuff);*/
+            lcdPutStringXY(0,0,asBuf);
+                for(iNdx2=0;iNdx2<0xFF;iNdx2++)
+                {
+                convertByteToHex(iNdx2,asBuf);
+                /*strcpy(asOutBuff,asBuf);
+                bPosOut = strlen(asOutBuff);*/
+                lcdPutStringXY(3,0,asBuf);
+                DelayMs(100);
+                }
+            }
+            #endif
+            #if 0
+            char sBuff[8];
+            float fTemp,fPress;
+            getPressTemp(&fTemp,&fPress);
+            snprintf(sBuff,sizeof(sBuff),"%f",fTemp);
+            lcdPutStringXY(0,0,sBuff);
+            snprintf(sBuff,sizeof(sBuff),"%f",fPress);
+            lcdPutStringXY(8,0,sBuff);
+            #endif
+
+            if(startDHT11())
+            {
+                char sBuff[16];
+                //PORTAbits.RA0 = 1;
+                INT8 iTemp, iHum;
+                if(getTempDHT11(&iTemp,&iHum))
+                {
+                    snprintf(sBuff,sizeof(sBuff),"T: %dC H: %d%%",iTemp,iHum);
+                    lcdPutStringXY(0,0,sBuff);
+                }
+                //else
+                //    lcdPutStringXY(0,1,"KO");
+                //lcdPutStringXY(0,0,"OK");
+            }
+            //else
+            //    lcdPutStringXY(0,0,"KO");
+            //snprintf(asOutBuff,sizeof(asOutBuff),"%d %d %d %d\r\n",aiRes[0],aiRes[1],aiRes[2],aiRes[3]);
+            //bPosOut = strlen(asOutBuff);
+            //PORTAbits.RA0 = 0;
             break;
-        }*/
+        }
+        case 'c':
+            lcdClear();
+            break;
         case 'v':
             strcpy(asOutBuff,VERSION);
             bPosOut = strlen(asOutBuff);
