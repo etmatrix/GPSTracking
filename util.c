@@ -2,6 +2,7 @@
 #include "GenericTypeDefs.h"
 #include "Compiler.h"
 
+#if 0
 void convertByteToHex(UINT8 bByte,char *sBuf)
 {
     UINT8 bTemp = bByte>>4;
@@ -33,6 +34,7 @@ void delayUs(UINT16 iDelay)
     IFS0bits.T2IF = 0;
     while(!IFS0bits.T2IF){}
 }*/
+
 // Each unit 500 ns 16MHz 62,5 ns * 8 (prescaler 01 1:8) = 500 ns
 void delayWith5(const UINT16 iDelay)
 {
@@ -67,7 +69,7 @@ void initDelayWith5M(const UINT16 iDelay)
     IFS1bits.T5IF = 0;
     #endif
 }
-
+#endif
 void DelayMs(WORD delay)
 {
     unsigned int int_status;
@@ -85,15 +87,11 @@ void DelayMs(WORD delay)
 void delayUs(UINT16 iUs)
 {
     // CP0Count counts at half the CPU rate
-    UINT8 Fcp0 = GetSystemClock() / 1000000 / 2;
+    #define Fcp0 GetSystemClock() / 1000000 / 2
     // get start ticks
     UINT32 start = _CP0_GET_COUNT();
     // calculate last tick number for the given number of microseconds
     UINT32 stop = start + iUs * Fcp0;
 
-    // wait till count reaches the stop value
-    if (stop > start)
-        while (_CP0_GET_COUNT() < stop);
-    else
-        while (_CP0_GET_COUNT() > start || _CP0_GET_COUNT() < stop);
+    while (_CP0_GET_COUNT() < stop);
 }

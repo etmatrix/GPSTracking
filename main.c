@@ -20,9 +20,14 @@
  * RB14 SCK SD
  * RB15 Tx1 GPS
  *
- *
- * Valutare spostamento 3 pulsanti da pic a MCP e mettere 2 segnali LCD e CS SPI su PIC
- *
+ * - Gestione 3 pulsanti
+ * - accesso SD e scrittura FAT FS
+ * - Gestione GPS
+ * - gestione menù
+ * - disposizione dati su LCD
+ * - calcolo tramonto e sorgere sole e luna
+ * - calcolo altezza con pressione
+ * 
  */
 /* Timers
  * 
@@ -149,7 +154,7 @@ static __inline void __attribute__((always_inline)) initSystem()
     SYSTEMConfig(GetSystemClock(),SYS_CFG_ALL);
     #endif
     TRISA = 0;
-    TRISB = 0b0010000000000000; // RB13 RX1 input
+    TRISB = 0b0010000010000000; // RB13 RX1, RB7 input
 
     LATA = 0;
     LATB = 0;
@@ -259,19 +264,13 @@ static __inline void __attribute__((always_inline)) processData(char cData)
             lcdPutStringXY(8,0,sBuff);
             #endif
 
-            if(startDHT11())
+            char sBuff[16];
+            //PORTAbits.RA0 = 1;
+            INT8 iTemp, iHum;
+            if(getTempDHT11(&iTemp,&iHum))
             {
-                char sBuff[16];
-                //PORTAbits.RA0 = 1;
-                INT8 iTemp, iHum;
-                if(getTempDHT11(&iTemp,&iHum))
-                {
-                    snprintf(sBuff,sizeof(sBuff),"T: %dC H: %d%%",iTemp,iHum);
-                    lcdPutStringXY(0,0,sBuff);
-                }
-                //else
-                //    lcdPutStringXY(0,1,"KO");
-                //lcdPutStringXY(0,0,"OK");
+                snprintf(sBuff,sizeof(sBuff),"T:%dC H:%d%%",iTemp,iHum);
+                lcdPutStringXY(0,0,sBuff);
             }
             //else
             //    lcdPutStringXY(0,0,"KO");

@@ -56,12 +56,11 @@ static INT16 calculatePComp(UINT16 iPress, UINT16 iTemp)
 {
     INT32 c12x2, a1, a1x1, y1, a2x2, PComp;
 
-    c12x2 = (((INT32)iCoeC12) * iTemp) >> 11;  // c12x2 = c12 * Tadc
-    a1 = (INT32)iCoeB1 + c12x2;                // a1    = b1  + c12x2
-    a1x1 = a1 * iPress;                        // a1x1  = a1  * Padc
-    y1 = (((INT32)iCoeA0) << 10) + a1x1;       // y1    = a0  + a1x1
-    a2x2 = (((INT32)iCoeB2) * iTemp) >> 1;     // a2x2  = b2  * Tadc
-    PComp = (y1 + a2x2) >> 9;                  // PComp = y1  + a2x2
-
+    c12x2 = (((INT32)iCoeC12) * iTemp) >> 11;  // c12x2 = c12 * Tadc
+    a1 = (INT32)iCoeB1 + c12x2;                // a1    = b1  + c12x2
+    a1x1 = a1 * iPress;                        // a1x1  = a1  * Padc
+    y1 = (((INT32)iCoeA0) << 10) + a1x1;       // y1    = a0  + a1x1
+    a2x2 = (((INT32)iCoeB2) * iTemp) >> 1;     // a2x2  = b2  * Tadc
+    PComp = (y1 + a2x2) >> 9;                  // PComp = y1  + a2x2
     return (INT16)(PComp/16);
 }
