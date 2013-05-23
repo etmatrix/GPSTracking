@@ -64,3 +64,4 @@ BOOL getTempDHT11(INT8 *iTemp,INT8 *iHum)
     else
         return FALSE;
 }
+

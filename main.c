@@ -83,7 +83,7 @@ MCP23008
 
 #include <gps.h>
 #include <lcd.h>
-#include <mcp115A2.h>
+#include <mpl115A2.h>
 #include <dht11.h>
 //#include <spi.h>
 //#include <sdcard.h>
@@ -190,9 +190,21 @@ static __inline void __attribute__((always_inline)) initSystem()
     #endif
 
     UARTConfigure(UART1, UART_ENABLE_PINS_TX_RX_ONLY | UART_ENABLE_HIGH_SPEED | I2C_STOP_IN_IDLE);
+    UARTSetFifoMode(UART1, UART_INTERRUPT_ON_RX_NOT_EMPTY);
     UARTSetLineControl(UART1, UART_DATA_SIZE_8_BITS | UART_PARITY_NONE | UART_STOP_BITS_1);
     UARTSetDataRate(UART1, GetPeripheralClock(), 9600);
     UARTEnable(UART1, UART_ENABLE_FLAGS(UART_PERIPHERAL | UART_RX | UART_TX));
+
+    // Configure UART1 RX Interrupt
+    INTEnable(INT_SOURCE_UART_RX(UART1), INT_ENABLED);
+    INTSetVectorPriority(INT_VECTOR_UART(UART1), INT_PRIORITY_LEVEL_3);
+    INTSetVectorSubPriority(INT_VECTOR_UART(UART1), INT_SUB_PRIORITY_LEVEL_0);
+
+    // configure for multi-vectored mode
+    INTConfigureSystem(INT_SYSTEM_CONFIG_MULT_VECTOR);
+
+    // enable interrupts
+    INTEnableInterrupts();
 
     initI2C();
     mcpInit();
@@ -244,8 +256,8 @@ static __inline void __attribute__((always_inline)) processData(char cData)
             /*strcpy(asOutBuff,asBuf);
             bPosOut = strlen(asOutBuff);*/
             lcdPutStringXY(0,0,asBuf);
-                for(iNdx2=0;iNdx2<0xFF;iNdx2++)
-                {
+            for(iNdx2=0;iNdx2<0xFF;iNdx2++)
+            {
                 convertByteToHex(iNdx2,asBuf);
                 /*strcpy(asOutBuff,asBuf);
                 bPosOut = strlen(asOutBuff);*/
@@ -301,4 +313,15 @@ static __inline void __attribute__((always_inline)) processData(char cData)
     }
 }
 
-/** EOF main.c *************************************************/
+void __ISR(_UART_1_VECTOR, IPL3SOFT) uart1Handler(void)
+{
+    // Is this an RX interrupt?
+    if(INTGetFlag(INT_SOURCE_UART_RX(UART1)))
+    {
+        // Clear the RX interrupt Flag
+        INTClearFlag(INT_SOURCE_UART_RX(UART1));
+    }
+    // We don't care about TX interrupt
+    //if(INTGetFlag(INT_SOURCE_UART_TX(UART1)))
+    //    INTClearFlag(INT_SOURCE_UART_TX(UART1));
+}
